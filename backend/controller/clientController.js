@@ -1,5 +1,10 @@
 let db = require('../databaseConfi.js')
 let bcrypt = require('bcryptjs')
+let jwt=require('jsonwebtoken')
+
+function generateToken(user){
+    return jwt.sign({id:user.id},"hello",{expiresIn: '1h'})
+}
 
 exports.clientSave = async (req, res) => {
     let username = req.body.username
@@ -30,11 +35,14 @@ exports.clientLogin = (req, res) => {
         if (err) throw err;
         else {
 
-            bcrypt.compare(password, result[0].password, (err, isMatch) => {
+            bcrypt.compare(password, result[0].password,async (err, isMatch) => {
                 if (err) throw err
                 {
 if(isMatch==true){
-    res.send(true)
+    let token=await generateToken(result[0])
+    console.log(token)
+
+    res.json({token,isMatch})
 }
 else{
     res.send(false)
